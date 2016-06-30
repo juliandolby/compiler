@@ -51,15 +51,15 @@ public class GitCommit extends AbstractCommit {
 	private RevWalk revwalk;
 	private HashMap<String, ObjectId> filePathGitObjectIds = new HashMap<String, ObjectId>();
 
-	public GitCommit(final Repository repository, GitConnector cnn) {
-		super(cnn);
+	public GitCommit(final Repository repository, GitConnector cnn, JavaFileHandler jfh) {
+		super(cnn, jfh);
 		this.repository = repository;
 		this.revwalk = new RevWalk(repository);
 	}
 
 	@Override
 	/** {@inheritDoc} */
-	protected String getFileContents(final String path) {
+	public String getFileContents(final String path) {
 		try {
 			/*ObjectId fileid = null;
 			revwalk.reset();
@@ -92,6 +92,19 @@ public class GitCommit extends AbstractCommit {
 			e.printStackTrace();
 		}
 		return "";
+	}
+
+	public byte[] getFileBytes(final String path) {
+		try {
+			ObjectId fileid = filePathGitObjectIds.get(path);
+			if (fileid == null) return new byte[0];
+
+			return repository.open(fileid, Constants.OBJ_BLOB).getCachedBytes();
+		} catch (final IOException e) {
+			if (debug)
+				System.err.println("Git Error getting contents for '" + path + "' at revision " + id + ": " + e.getMessage());
+			return new byte[0];
+		}
 	}
 
 	@SuppressWarnings("unused")

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
@@ -31,6 +32,8 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+
+import boa.datagen.scm.AbstractCommit.JavaFileHandler;
 
 /**
  * @author rdyer
@@ -47,8 +50,11 @@ public class GitConnector extends AbstractConnector {
 
 	private String lastCommitId = null;
 
-	public GitConnector(final String path) {
+	private JavaFileHandler jfh;
+	
+	public GitConnector(final String path, JavaFileHandler jfh) {
 		try {
+			this.jfh = jfh;
 			this.path = path;
 			this.repository = new FileRepositoryBuilder()
 								.setGitDir(new File(path + "/.git"))
@@ -100,7 +106,7 @@ public class GitConnector extends AbstractConnector {
 			revisionMap = new HashMap<String, Integer>();
 
 			for (final RevCommit rc: revwalk) {
-				final GitCommit gc = new GitCommit(repository, this);
+				final GitCommit gc = new GitCommit(repository, this, jfh);
 
 				gc.setId(rc.getName());
 				gc.setAuthor(rc.getAuthorIdent().getName());

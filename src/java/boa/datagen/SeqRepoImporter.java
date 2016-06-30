@@ -36,15 +36,16 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-
+import boa.datagen.scm.AbstractCommit.JavaFileHandler;
 import boa.datagen.scm.AbstractConnector;
 import boa.datagen.scm.GitConnector;
+import boa.datagen.util.FileIO;
+import boa.datagen.util.Properties;
 import boa.types.Code.CodeRepository;
 import boa.types.Code.Revision;
 import boa.types.Toplevel.Project;
-import boa.datagen.util.FileIO;
-import boa.datagen.util.Properties;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author hoan
@@ -75,7 +76,7 @@ public class SeqRepoImporter {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		conf = new Configuration();
-		conf.set("fs.default.name", "hdfs://boa-njt/");
+		conf.set("fs.default.name", "file:/tmp/boa/");
 		fileSystem = FileSystem.get(conf);
 		base = conf.get("fs.default.name", "");
 		
@@ -305,7 +306,7 @@ public class SeqRepoImporter {
 			if (debug)
 				System.out.println("Has repository: " + name);
 
-			final AbstractConnector conn = new GitConnector(gitDir.getAbsolutePath());
+			final AbstractConnector conn = new GitConnector(gitDir.getAbsolutePath(), new JavaFileHandler());
 			try {
 				final CodeRepository.Builder repoBuilder = CodeRepository.newBuilder(repo);
 				final String repoKey = "g:" + project.getId() + keyDelim + repo.getKind().getNumber();

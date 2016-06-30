@@ -17,17 +17,31 @@
 
 package boa.datagen.scm;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
 
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.SequenceFile.Writer;
+import org.apache.hadoop.io.Text;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.*;
-import org.eclipse.wst.jsdt.core.JavaScriptCore;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.wst.jsdt.core.dom.JavaScriptUnit;
 
+import boa.datagen.util.FileIO;
+import boa.datagen.util.JavaErrorCheckVisitor;
+import boa.datagen.util.JavaScriptErrorCheckVisitor;
+import boa.datagen.util.JavaScriptVisitor;
+import boa.datagen.util.JavaVisitor;
 import boa.types.Ast.ASTRoot;
 import boa.types.Code.Revision;
 import boa.types.Diff.ChangedFile;
@@ -35,12 +49,6 @@ import boa.types.Diff.ChangedFile.Builder;
 import boa.types.Diff.ChangedFile.FileKind;
 import boa.types.Shared.ChangeKind;
 import boa.types.Shared.Person;
-import boa.datagen.util.FileIO;
-import boa.datagen.util.JavaScriptErrorCheckVisitor;
-import boa.datagen.util.JavaScriptVisitor;
-import boa.datagen.util.JavaVisitor;
-import boa.datagen.util.JavaErrorCheckVisitor;
-import boa.datagen.util.Properties;
 
 /**
  * @author rdyer
@@ -48,9 +56,12 @@ import boa.datagen.util.Properties;
 public abstract class AbstractCommit {
 	protected static final boolean debug = false; //util.Properties.getBoolean("debug", main.DefaultProperties.DEBUG);
 	
+	protected JavaFileHandler jfh;
+	
 	protected AbstractConnector connector;
-	protected AbstractCommit(AbstractConnector cnn) {
+	protected AbstractCommit(AbstractConnector cnn, JavaFileHandler jfh) {
 		this.connector = cnn;
+		this.jfh = jfh;
 	}
 	
 	protected String id = null;
@@ -90,6 +101,8 @@ public abstract class AbstractCommit {
 	protected static final ByteArrayOutputStream buffer = new ByteArrayOutputStream(4096);
 
 	protected abstract String getFileContents(final String path);
+
+	protected abstract byte[] getFileBytes(final String path);
 
 	protected abstract Person parsePerson(final String s);
 
@@ -310,48 +323,70 @@ public abstract class AbstractCommit {
 		final ChangedFile.Builder fb = ChangedFile.newBuilder();
 		fb.setName(path);
 		fb.setKind(FileKind.OTHER);
-		
+
 		final String lowerPath = path.toLowerCase();
-		if (lowerPath.endsWith(".txt"))
+		
+		if (lowerPath.equals(".classpath")) {
+			jfh.handleEclipseClasspath(this, id, path, fb, (String p) -> getFileContents(p));
+		} else if (lowerPath.endsWith(".txt"))
 			fb.setKind(FileKind.TEXT);
 		else if (lowerPath.endsWith(".xml"))
 			fb.setKind(FileKind.XML);
-		else if (lowerPath.endsWith(".jar") || lowerPath.endsWith(".class"))
+		else if (lowerPath.endsWith(".jar")) {
+			fb.setKind(FileKind.BINARY);
+			jfh.handleJarFile(this, id, path, fb, (String p) -> getFileBytes(p));
+		} else if (lowerPath.endsWith(".class"))
 			fb.setKind(FileKind.BINARY);
 		else if (lowerPath.endsWith(".java") && attemptParse) {
-			final String content = getFileContents(path);
-
-			fb.setKind(FileKind.SOURCE_JAVA_JLS2);
-			if (!parseJavaFile(path, fb, content, JavaCore.VERSION_1_4, AST.JLS2, false, null, null)) {
-				if (debug)
-					System.err.println("Found JLS2 parse error in: revision " + id + ": file " + path);
-
-				fb.setKind(FileKind.SOURCE_JAVA_JLS3);
-				if (!parseJavaFile(path, fb, content, JavaCore.VERSION_1_5, AST.JLS3, false, null, null)) {
-					if (debug)
-						System.err.println("Found JLS3 parse error in: revision " + id + ": file " + path);
-
-					fb.setKind(FileKind.SOURCE_JAVA_JLS4);
-					if (!parseJavaFile(path, fb, content, JavaCore.VERSION_1_7, AST.JLS4, false, null, null)) {
-						if (debug)
-							System.err.println("Found JLS4 parse error in: revision " + id + ": file " + path);
-
-						//fb.setContent(content);
-						fb.setKind(FileKind.SOURCE_JAVA_ERROR);
-					} else
-						if (debug)
-							System.err.println("Accepted JLS4: revision " + id + ": file " + path);
-				} else
-					if (debug)
-						System.err.println("Accepted JLS3: revision " + id + ": file " + path);
-			} else
-				if (debug)
-					System.err.println("Accepted JLS2: revision " + id + ": file " + path);
+			jfh.handleJavaFile(this, id, path, fb, (String p) -> getFileContents(p));
 		}
 
 		return fb;
 	}
 
+	public static class JavaFileHandler {
+		
+	public void handleJavaFile(AbstractCommit c, String id, final String path,
+			final ChangedFile.Builder fb, Function<String,String> getContent) {
+		fb.setKind(FileKind.SOURCE_JAVA_JLS2);
+		if (!c.parseJavaFile(path, fb, getContent.apply(path), JavaCore.VERSION_1_4, AST.JLS2, false, null, null)) {
+			if (debug)
+				System.err.println("Found JLS2 parse error in: revision " + id + ": file " + path);
+
+			fb.setKind(FileKind.SOURCE_JAVA_JLS3);
+			if (!c.parseJavaFile(path, fb, getContent.apply(path), JavaCore.VERSION_1_5, AST.JLS3, false, null, null)) {
+				if (debug)
+					System.err.println("Found JLS3 parse error in: revision " + id + ": file " + path);
+
+				fb.setKind(FileKind.SOURCE_JAVA_JLS4);
+				if (!c.parseJavaFile(path, fb, getContent.apply(path), JavaCore.VERSION_1_7, AST.JLS4, false, null, null)) {
+					if (debug)
+						System.err.println("Found JLS4 parse error in: revision " + id + ": file " + path);
+
+					//fb.setContent(content);
+					fb.setKind(FileKind.SOURCE_JAVA_ERROR);
+				} else
+					if (debug)
+						System.err.println("Accepted JLS4: revision " + id + ": file " + path);
+			} else
+				if (debug)
+					System.err.println("Accepted JLS3: revision " + id + ": file " + path);
+		} else
+			if (debug)
+				System.err.println("Accepted JLS2: revision " + id + ": file " + path);
+	}
+
+	public void handleEclipseClasspath(AbstractCommit abstractCommit,
+			String id, String path, Builder fb, Function<String,String> content) {	
+	}
+	
+	public void handleJarFile(AbstractCommit abstractCommit,
+			String id, String path, Builder fb, Function<String,byte[]> content) {
+
+	}	
+
+	}
+	
 	private boolean parseJavaFile(final String path, final ChangedFile.Builder fb, final String content, final String compliance, final int astLevel, final boolean storeOnError, Writer astWriter, String key) {
 		try {
 			final ASTParser parser = ASTParser.newParser(astLevel);
