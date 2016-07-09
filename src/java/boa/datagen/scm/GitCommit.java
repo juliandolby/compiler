@@ -167,8 +167,8 @@ public class GitCommit extends AbstractCommit {
 			if (parentList.length > 1) {
 				rChangedPaths.putAll(rAddedPaths);
 				rChangedPaths.putAll(rRemovedPaths);
-				for (String key : rChangedPaths.keySet())
-					rChangedPaths.put(key, key);
+				//for (String key : rChangedPaths.keySet())
+				//	rChangedPaths.put(key, key);
 				rAddedPaths.clear();
 				rRemovedPaths.clear();
 			}

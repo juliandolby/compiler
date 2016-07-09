@@ -48,4 +48,5 @@ message ChangedFile {
 	repeated ChangeKind changes = 7;
 	repeated int32 previous_versions = 8;
 	repeated int32 previous_index = 9;
+	optional string oldName = 10;
 }

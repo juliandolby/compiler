@@ -128,8 +128,13 @@ public abstract class AbstractCommit {
 		for (final String path : changedPaths.keySet()) {
 			final ChangedFile.Builder fb = processChangeFile(path, parse, astWriter, revKey, keyDelim);
 			fb.setChange(ChangeKind.MODIFIED);
+			if (changedPaths.get(path) != null) {
+				fb.setOldName(changedPaths.get(path));
+			}
+			
 			//fb.setKey("");
-			revision.addFiles(fb.build());
+			ChangedFile cf = fb.build();
+			revision.addFiles(cf);
 		}
 		for (final String path : addedPaths.keySet()) {
 			final ChangedFile.Builder fb = processChangeFile(path, parse, astWriter, revKey, keyDelim);
@@ -290,6 +295,9 @@ public abstract class AbstractCommit {
 			final ChangedFile.Builder fb = processChangeFile(path, parse);
 			fb.setChange(ChangeKind.MODIFIED);
 			fb.setKey("");
+			if (changedPaths.get(path) != null) {
+				fb.setOldName(changedPaths.get(path));
+			}
 			revision.addFiles(fb.build());
 		}
 		for (final String path : addedPaths.keySet()) {
