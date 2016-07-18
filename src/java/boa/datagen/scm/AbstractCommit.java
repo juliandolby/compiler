@@ -347,12 +347,20 @@ public abstract class AbstractCommit {
 			fb.setKind(FileKind.BINARY);
 		else if (lowerPath.endsWith(".java") && attemptParse) {
 			jfh.handleJavaFile(this, id, path, fb, (String p) -> getFileContents(p));
+		} else if (lowerPath.endsWith(".javascript")) {
+			jfh.handleJavaScriptFile(this, id, path, fb, (String p) -> getFileContents(p));
 		}
+
 
 		return fb;
 	}
 
 	public static class JavaFileHandler {
+
+		public void handleJavaScriptFile(AbstractCommit c, String id, final String path,
+				final ChangedFile.Builder fb, Function<String,String> getContent) {
+			fb.setKind(FileKind.SOURCE_JAVASCRIPT);
+		}
 		
 	public void handleJavaFile(AbstractCommit c, String id, final String path,
 			final ChangedFile.Builder fb, Function<String,String> getContent) {
