@@ -349,13 +349,21 @@ public abstract class AbstractCommit {
 			jfh.handleJavaFile(this, id, path, fb, (String p) -> getFileContents(p));
 		} else if (lowerPath.endsWith(".javascript")) {
 			jfh.handleJavaScriptFile(this, id, path, fb, (String p) -> getFileContents(p));
+		} else if (lowerPath.endsWith(".html")) {
+			jfh.handleHtmlFile(this, id, path, fb, (String p) -> getFileContents(p));
 		}
+
 
 
 		return fb;
 	}
 
 	public static class JavaFileHandler {
+
+		public void handleHtmlFile(AbstractCommit c, String id, final String path,
+				final ChangedFile.Builder fb, Function<String,String> getContent) {
+			fb.setKind(FileKind.SOURCE_HTML);
+		}
 
 		public void handleJavaScriptFile(AbstractCommit c, String id, final String path,
 				final ChangedFile.Builder fb, Function<String,String> getContent) {

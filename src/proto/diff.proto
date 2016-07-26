@@ -41,6 +41,9 @@ message ChangedFile {
 
 		SOURCE_JAVASCRIPT = 300;
 		JAVASCRIPT = 300;
+
+		SOURCE_HTML = 400;
+		HTML = 400;
 	}
 	required ChangeKind change = 1;
 	required FileKind kind = 2;

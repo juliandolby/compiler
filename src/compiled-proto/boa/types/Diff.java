@@ -452,6 +452,10 @@ public final class Diff {
        * <code>SOURCE_JAVASCRIPT = 300;</code>
        */
       SOURCE_JAVASCRIPT(26, 300),
+      /**
+       * <code>SOURCE_HTML = 400;</code>
+       */
+      SOURCE_HTML(28, 400),
       ;
 
       /**
@@ -502,6 +506,10 @@ public final class Diff {
        * <code>JAVASCRIPT = 300;</code>
        */
       public static final FileKind JAVASCRIPT = SOURCE_JAVASCRIPT;
+      /**
+       * <code>HTML = 400;</code>
+       */
+      public static final FileKind HTML = SOURCE_HTML;
       /**
        * <code>OTHER = 0;</code>
        */
@@ -614,6 +622,14 @@ public final class Diff {
        * <code>JAVASCRIPT = 300;</code>
        */
       public static final int JAVASCRIPT_VALUE = 300;
+      /**
+       * <code>SOURCE_HTML = 400;</code>
+       */
+      public static final int SOURCE_HTML_VALUE = 400;
+      /**
+       * <code>HTML = 400;</code>
+       */
+      public static final int HTML_VALUE = 400;
 
 
       public final int getNumber() { return value; }
@@ -636,6 +652,7 @@ public final class Diff {
           case 204: return SOURCE_CS_CS4;
           case 205: return SOURCE_CS_CS5;
           case 300: return SOURCE_JAVASCRIPT;
+          case 400: return SOURCE_HTML;
           default: return null;
         }
       }
@@ -666,7 +683,7 @@ public final class Diff {
       }
 
       private static final FileKind[] VALUES = {
-        OTHER, BINARY, TEXT, XML, SOURCE_JAVA_ERROR, SOURCE_JAVA_JLS2, SOURCE_JAVA_JLS3, SOURCE_JAVA_JLS4, SOURCE_JAVA_JLS5, JAVA_ERROR, JLS2, JLS3, JLS4, JLS5, SOURCE_CS_ERROR, SOURCE_CS_CS1, SOURCE_CS_CS2, SOURCE_CS_CS3, SOURCE_CS_CS4, SOURCE_CS_CS5, CS_ERROR, CS1, CS2, CS3, CS4, CS5, SOURCE_JAVASCRIPT, JAVASCRIPT, 
+        OTHER, BINARY, TEXT, XML, SOURCE_JAVA_ERROR, SOURCE_JAVA_JLS2, SOURCE_JAVA_JLS3, SOURCE_JAVA_JLS4, SOURCE_JAVA_JLS5, JAVA_ERROR, JLS2, JLS3, JLS4, JLS5, SOURCE_CS_ERROR, SOURCE_CS_CS1, SOURCE_CS_CS2, SOURCE_CS_CS3, SOURCE_CS_CS4, SOURCE_CS_CS5, CS_ERROR, CS1, CS2, CS3, CS4, CS5, SOURCE_JAVASCRIPT, JAVASCRIPT, SOURCE_HTML, HTML, 
       };
 
       public static FileKind valueOf(
@@ -2220,7 +2237,7 @@ public final class Diff {
   static {
     java.lang.String[] descriptorData = {
       "\n\ndiff.proto\022\tboa.types\032\014shared.proto\032\ta" +
-      "st.proto\"\374\005\n\013ChangedFile\022%\n\006change\030\001 \002(\016" +
+      "st.proto\"\231\006\n\013ChangedFile\022%\n\006change\030\001 \002(\016" +
       "2\025.boa.types.ChangeKind\022-\n\004kind\030\002 \002(\0162\037." +
       "boa.types.ChangedFile.FileKind\022\014\n\004name\030\003" +
       " \002(\t\022\013\n\003key\030\004 \002(\t\022\037\n\003ast\030\005 \001(\0132\022.boa.typ" +
@@ -2228,7 +2245,7 @@ public final class Diff {
       ".CommentsRoot\022&\n\007changes\030\007 \003(\0162\025.boa.typ" +
       "es.ChangeKind\022\031\n\021previous_versions\030\010 \003(\005" +
       "\022\026\n\016previous_index\030\t \003(\005\022\017\n\007oldName\030\n \001(" +
-      "\t\"\303\003\n\010FileKind\022\t\n\005OTHER\020\000\022\n\n\006BINARY\020\001\022\010\n",
+      "\t\"\340\003\n\010FileKind\022\t\n\005OTHER\020\000\022\n\n\006BINARY\020\001\022\010\n",
       "\004TEXT\020\002\022\007\n\003XML\020\003\022\025\n\021SOURCE_JAVA_ERROR\020d\022" +
       "\024\n\020SOURCE_JAVA_JLS2\020e\022\024\n\020SOURCE_JAVA_JLS" +
       "3\020f\022\024\n\020SOURCE_JAVA_JLS4\020g\022\024\n\020SOURCE_JAVA" +
@@ -2239,7 +2256,8 @@ public final class Diff {
       "S4\020\314\001\022\022\n\rSOURCE_CS_CS5\020\315\001\022\r\n\010CS_ERROR\020\310\001" +
       "\022\010\n\003CS1\020\311\001\022\010\n\003CS2\020\312\001\022\010\n\003CS3\020\313\001\022\010\n\003CS4\020\314\001" +
       "\022\010\n\003CS5\020\315\001\022\026\n\021SOURCE_JAVASCRIPT\020\254\002\022\017\n\nJA",
-      "VASCRIPT\020\254\002\032\002\020\001B\002H\001"
+      "VASCRIPT\020\254\002\022\020\n\013SOURCE_HTML\020\220\003\022\t\n\004HTML\020\220\003" +
+      "\032\002\020\001B\002H\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
