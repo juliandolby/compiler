@@ -42,8 +42,6 @@ import boa.datagen.scm.AbstractCommit.JavaFileHandler;
 public class GitConnector extends AbstractConnector {
 	private static final boolean debug = boa.datagen.util.Properties.getBoolean("debug", boa.datagen.DefaultProperties.DEBUG);
 
-	private String path;
-
 	private Repository repository;
 	private Git git;
 	private RevWalk revwalk;
@@ -51,20 +49,28 @@ public class GitConnector extends AbstractConnector {
 	private String lastCommitId = null;
 
 	private JavaFileHandler jfh;
-	
+
 	public GitConnector(final String path, JavaFileHandler jfh) {
+		this( open(path), jfh);
+	}
+
+	private static Repository open(final String path) {
 		try {
-			this.jfh = jfh;
-			this.path = path;
-			this.repository = new FileRepositoryBuilder()
-								.setGitDir(new File(path + "/.git"))
-								.build();
-			this.git = new Git(this.repository);
-			this.revwalk = new RevWalk(this.repository);
+			return new FileRepositoryBuilder()
+									.setGitDir(new File(path + "/.git"))
+									.build();
 		} catch (final IOException e) {
 			if (debug)
 				System.err.println("Git Error connecting to " + path + ". " + e.getMessage());
+			return null;
 		}
+	}
+	
+	public GitConnector(Repository git, JavaFileHandler jfh) {
+		this.jfh = jfh;
+		this.repository = git;
+		this.git = new Git(this.repository);
+		this.revwalk = new RevWalk(this.repository);
 	}
 
 	@Override
@@ -83,7 +89,7 @@ public class GitConnector extends AbstractConnector {
 				lastCommitId = revwalk.next().getId().toString();
 			} catch (final Exception e) {
 				if (debug)
-					System.err.println("Git Error getting last commit for " + path + ". " + e.getMessage());
+					System.err.println("Git Error getting last commit for " + repository + ". " + e.getMessage());
 			}
 		}
 		return lastCommitId;
@@ -121,7 +127,7 @@ public class GitConnector extends AbstractConnector {
 			}
 		} catch (final IOException e) {
 			if (debug)
-				System.err.println("Git Error getting parsing HEAD commit for " + path + ". " + e.getMessage());
+				System.err.println("Git Error getting parsing HEAD commit for " + repository + ". " + e.getMessage());
 		}
 	}
 
