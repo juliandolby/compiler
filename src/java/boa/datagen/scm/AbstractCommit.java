@@ -347,7 +347,7 @@ public abstract class AbstractCommit {
 			fb.setKind(FileKind.BINARY);
 		else if (lowerPath.endsWith(".java") && attemptParse) {
 			jfh.handleJavaFile(this, id, path, fb, (String p) -> getFileContents(p));
-		} else if (lowerPath.endsWith(".javascript")) {
+		} else if (lowerPath.endsWith(".js")) {
 			jfh.handleJavaScriptFile(this, id, path, fb, (String p) -> getFileContents(p));
 		} else if (lowerPath.endsWith(".html")) {
 			jfh.handleHtmlFile(this, id, path, fb, (String p) -> getFileContents(p));
