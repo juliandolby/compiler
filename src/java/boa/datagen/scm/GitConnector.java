@@ -53,18 +53,27 @@ public class GitConnector extends AbstractConnector {
 	private JavaFileHandler jfh;
 	
 	public GitConnector(final String path, JavaFileHandler jfh) {
+		this( open(path), jfh);
+	}
+	
+	private static Repository open(final String path) {
 		try {
-			this.jfh = jfh;
-			this.path = path;
-			this.repository = new FileRepositoryBuilder()
-								.setGitDir(new File(path + "/.git"))
-								.build();
-			this.git = new Git(this.repository);
-			this.revwalk = new RevWalk(this.repository);
+			return new FileRepositoryBuilder()
+									.setGitDir(new File(path + "/.git"))
+									.build();
 		} catch (final IOException e) {
 			if (debug)
 				System.err.println("Git Error connecting to " + path + ". " + e.getMessage());
+			return null;
 		}
+		
+	}
+	
+	public GitConnector(Repository git, JavaFileHandler jfh) {
+		this.jfh = jfh;
+		this.repository = git;
+		this.git = new Git(this.repository);
+		this.revwalk = new RevWalk(this.repository);
 	}
 
 	@Override
