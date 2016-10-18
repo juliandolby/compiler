@@ -42,8 +42,6 @@ import boa.datagen.scm.AbstractCommit.JavaFileHandler;
 public class GitConnector extends AbstractConnector {
 	private static final boolean debug = boa.datagen.util.Properties.getBoolean("debug", boa.datagen.DefaultProperties.DEBUG);
 
-	private String path;
-
 	private Repository repository;
 	private Git git;
 	private RevWalk revwalk;
@@ -51,7 +49,7 @@ public class GitConnector extends AbstractConnector {
 	private String lastCommitId = null;
 
 	private JavaFileHandler jfh;
-	
+
 	public GitConnector(final String path, JavaFileHandler jfh) {
 		this( open(path), jfh);
 	}
@@ -92,7 +90,7 @@ public class GitConnector extends AbstractConnector {
 				lastCommitId = revwalk.next().getId().toString();
 			} catch (final Exception e) {
 				if (debug)
-					System.err.println("Git Error getting last commit for " + path + ". " + e.getMessage());
+					System.err.println("Git Error getting last commit for " + repository + ". " + e.getMessage());
 			}
 		}
 		return lastCommitId;
@@ -130,7 +128,7 @@ public class GitConnector extends AbstractConnector {
 			}
 		} catch (final IOException e) {
 			if (debug)
-				System.err.println("Git Error getting parsing HEAD commit for " + path + ". " + e.getMessage());
+				System.err.println("Git Error getting parsing HEAD commit for " + repository + ". " + e.getMessage());
 		}
 	}
 
